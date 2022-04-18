@@ -1,0 +1,553 @@
+<!doctype html> <html> <head> <meta charset="utf-8"> <title>ArrowKeyControl</title> <meta content="true" name="HandheldFriendly"> <meta content="width=device-width, height=device-height, user-scalable=no, viewport-fit=cover" name="viewport"> <style>*{ font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";line-height:1.4;box-sizing:border-box;-moz-user-select:none;-webkit-user-select:none;user-select:none;}html, body{ height:100%;overflow:hidden;}body{ margin:0;padding-top:constant(safe-area-inset-top); padding-top:env(safe-area-inset-top); padding-bottom:constant(safe-area-inset-bottom); padding-bottom:env(safe-area-inset-bottom); background:#ccc;background-position:center;background-size:cover;color:#000;font-size:16px;-webkit-tap-highlight-color:rgba(0, 0, 0, 0);touch-action:none;}.clearfix::after{ content:" ";display:table;clear:both;}.chrome{ pointer-events:none;}.visible-desktop{ display:none;}.layer{ display:none;align-items:center;justify-content:center;flex-direction:column;height:100%;max-width:560px;margin:0 auto;padding:10px;text-align:center;font-size:24px;}body.touch.waiting .layer, body.touch.playing .layer{ padding-bottom:0;}#waiting{ display:none;font-size:50px;font-weight:bold;}#playing{ justify-content:flex-end;}body.attract #attract, body.waiting #playing, body.playing #playing, body.game-over #game-over{ display:flex;}.play{ display:inline-block;position:absolute;bottom:20px;left:50%;width:100px;margin-left:-50px;padding:10px 20px;z-index:1;}.btn{ border:1px solid #2b308f;border-radius:4px;background-color:#3137a3;color:#fff;text-align:center;vertical-align:middle;cursor:pointer;}.btn:hover{ background-color:#252a7c;border-color:#1d2160;}.btn:active{ background-color:#252a7c;border-color:#1d2160;box-shadow:inset 0 3px 5px rgba(0,0,0,.125);}.btn:focus{ background-color:#252a7c;border-color:#0e0f2d;outline:5px auto -webkit-focus-ring-color;outline-offset:-2px;}.btn.disabled{ cursor:not-allowed;box-shadow:none;opacity:0.65;}#time-remaining{ width:100%;}#grind{ display:none;}#up, #right, #down, #left{ display:none;}body.up #up, body.right #right, body.down #down, body.left #left, body.waiting #waiting{ display:block;}body.grinding #grind{ display:block;}#score{ display:block;font-size:40px;font-weight:bold;}#input{ display:none;flex:none;margin-top:10px;stroke:#000;}body.touch #input{ display:block;}#results{ margin-bottom:40px;padding:25px;background-color:rgba(255, 255, 255, 0.7);border-radius:6px;}#results *{ -moz-user-select:text;-webkit-user-select:text;user-select:text;}#results table{ margin-top:25px;border-collapse:collapse;border:none;text-align:left;}#results th, #results td{ padding:0 0 10px 0;border:none;}#results th{ padding-right:10px;font-weight:normal;text-align:right;}#results td{ font-weight:bold;}@media screen and (min-width:600px){ .visible-desktop{ display:block;}th.visible-desktop, td.visible-desktop{ display:table-cell;}.layer{ padding:20px;font-size:30px;}#playing{ justify-content:center;}.play{ position:static;margin-left:0;}#input{ margin-top:20px;}#input{ margin-top:30px;}#results{ padding:40px;}#results table{ margin-top:40px;}}</style> <style>.unranked{ stroke:#555555;}.bronze{ stroke:#D39B77; }.silver{ stroke:#CACED2; }.gold{ stroke:#F7E36D; }.platinum{ stroke:#67655F; }.diamond{ stroke:#335B80; }.strontium{ stroke:#E1D7B6; }.vanadium{ stroke:#73788C; }</style> <style>#footer{ position:absolute;right:0;bottom:0;padding:15px;font-size:16px;}body.waiting #footer, body.playing #footer{ display:none;}#footer svg{ display:block;width:44px;height:44px;padding:10px;background-color:#fff;}#music-status{ margin-bottom:20px;}#music-status .disabled, #music-status .enabled{ display:none;}#music-status.disabled .disabled, #music-status.enabled .enabled{ display:block;}#menu{ display:none;position:fixed;top:0;right:0;bottom:0;left:0;padding:15px;z-index:2;background-color:#fff;box-shadow:0 0 15px rgba(0, 0, 0, .7);}body.menu-open #menu{ display:block;}#menu h2{ margin:0 0 15px 0;font-size:20px;font-weight:bold;}#menu a.list-item{ display:block;margin-bottom:20px;text-decoration:none;}#menu a.list-item:last-child{ margin-bottom:0;}#menu a.list-item span{ text-decoration:underline;}svg.icon{ width:24px;height:24px;vertical-align:middle;}#menu-close{ position:fixed;top:10px;right:10px;width:32px;height:32px;background-color:#fff;}@media screen and (min-width:600px){ #footer{ padding:25px;}#footer svg{ display:inline-block;width:68px;height:68px;}#music-status{ margin-bottom:0;margin-right:25px;}#menu{ left:auto;width:350px;padding:20px;}}</style> <style>#panel-backdrop{ display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:2;align-items:center;flex-direction:column;}#panel{ display:none;position:relative;width:100%;background-color:#fff;box-shadow:0 1px 15px rgba(0, 0, 0, .8);}#panel-close{ position:absolute;top:10px;right:10px;width:32px;height:32px;background-color:#fff;}#panel-content{ padding:15px;overflow:auto;}body.panel-open #panel-backdrop{ display:flex;}body.panel-open #panel{ display:block;}#panel h2{ margin:0 0 20px 0;font-size:24px;font-weight:bold;}#panel h3{ margin:0 0 15px 0;font-size:20px;font-weight:bold;}#panel h4{ margin:0 0 10px 0;font-size:20px;font-weight:bold;}#panel p{ margin:0 0 15px 0;}#panel p:last-child{ margin-bottom:0;}#panel a.list-item{ display:block;margin-bottom:5px;}#panel a.list-item:last-child{ margin-bottom:0;}#panel a.active{ font-weight:bold;}#panel .alert{ display:none;margin-bottom:20px;padding:15px;border:1px solid #ccc;border-radius:4px;}#panel .alert.success{ display:block;background-color:#dff0d8;border-color:#d6e9c6;}#panel .alert.error{ display:block;background-color:#f2dede;border-color:#ebccd1;}#panel ul, #panel ol{ margin:0 0 15px 0;padding-left:30px;}#panel ul:last-child, #panel ol:last-child{ margin-bottom:0;}#panel table{ margin-bottom:15px;font-size:14px;border-collapse:collapse;border:1px solid #ccc;}#panel table:last-child{ margin-bottom:0;}#panel th, #panel td{ padding:6px;border:1px solid #ccc;}#panel th{ text-align:left;font-weight:bold;}#panel form > div{ margin-bottom:20px;}#panel form > div:last-child{ margin-bottom:0;}#panel form label{ display:block;margin-bottom:5px;font-weight:bold;}#panel form input{ display:block;width:100%;margin:0;padding:6px 10px;border:1px solid #ccc;border-radius:4px;font-size:inherit;background-color:#fff;color:#000;}#panel form button{ display:inline-block;margin:0;padding:6px 10px;font-size:inherit;}#show-result-root table.rounds th{ white-space:nowrap;text-align:center;}#show-result-root table.rounds tr:nth-child(even){ background-color:#eee;}#show-result-root svg.icon{ width:20px;height:20px;}#show-result-root .ms{ font-size:10px;}@media screen and (min-width:600px){ #panel-backdrop{ padding:50px 25px 25px 25px;}#panel{ max-width:800px;border-radius:6px;}#panel-close{ right:20px;}#panel-content{ padding:20px;}#panel table{ font-size:unset;}#panel th, #panel td{ padding:6px 10px;}}</style> <script>"use strict";window.allImages=[{path:"Cathedral_of_Saint_Cecilia_of_Albi_-_7095_-_Altar_and_choir.jpg",title:"Altar and choir of Cathedral of Saint Cecilia of Albi",attribution:'By Pierre-Selim Huard [<a href="https://creativecommons.org/licenses/by/4.0">CC BY 4.0 </a>], <a href="https://commons.wikimedia.org/wiki/File:Cathedral_of_Saint_Cecilia_of_Albi_-_7095_-_Altar_and_choir.jpg">from Wikimedia Commons</a>'},{path:"London_street_in_the_rain_(Unsplash).jpg",title:"London street in the rain",attribution:'Anjana Menon anjimenon [<a href="http://creativecommons.org/publicdomain/zero/1.0/deed.en">CC0</a>], <a href="https://commons.wikimedia.org/wiki/File:London_street_in_the_rain_(Unsplash).jpg">via Wikimedia Commons</a>'},{path:"The_Great_Wave_off_Kanagawa.jpg",title:"Modern recut copy of The Great Wave off Kanagawa, from 36 Views of Mount Fuji",attribution:"After Katsushika Hokusai [Public domain]"},{path:"Fine_Wind,_Clear_Weather_(Gaifū_kaisei).jpg",title:"Fine Wind, Clear Weather (Gaifū kaisei), also known as Red Fuji, from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei)",attribution:"Museum of Fine Arts [Public domain]"},{path:"Budapest_parlament_interior.jpg",title:"Interior of Parliament of Hungary, Budapest, Hungary",attribution:'Karelj [Public domain], <a href="https://commons.wikimedia.org/wiki/File:Budapest_parlament_interior_6.jpg">from Wikimedia Commons</a>'},{path:"Kraków,_dom_kultury,_pocz._XX.jpg",title:"Kraków, dom kultury, pocz. XX",attribution:'Daniel.zolopa [<a href="https://creativecommons.org/licenses/by-sa/3.0/pl/deed.en">CC BY-SA 3.0 pl</a>], <a href="https://commons.wikimedia.org/wiki/File:02250_Krak%C3%B3w,_dom_kultury,_pocz._XX.jpg">from Wikimedia Commons</a>'},{path:"13-02-27-stadtschlosz-wiesbaden-by-RalfR-08.jpg",title:"Germany, Castle of Wiesbaden, Yellow Saloon",attribution:'Ralf Roletschek [<a href="http://www.gnu.org/copyleft/fdl.html">GFDL</a> or <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>]'},{path:"Aivazovsky,_Ivan_-_The_Ninth_Wave.jpg",title:"The Ninth Wave",attribution:"Ivan Aivazovsky [Public domain]"},{path:"Lake_Vuoksa_1.jpg",title:"Okunevy Island in Lake Vuoksa",attribution:'Dmitry A. Mottl [<a href="https://creativecommons.org/licenses/by-sa/3.0">CC BY-SA 3.0</a> or <a href="http://www.gnu.org/copyleft/fdl.html">GFDL</a>], <a href="https://commons.wikimedia.org/wiki/File:Lake_Vuoksa_1.jpg">from Wikimedia Commons</a>'},{path:"Dôme_du_Goûter_depuis_la_gare_des_glaciers.jpg",title:"The summit of Dôme du Goûter seen from the Gare des Glaciers",attribution:'<a href="/wiki/User:Nattfodd" title="User:Nattfodd">Nattfodd</a> [<a href="http://www.gnu.org/copyleft/fdl.html">GFDL</a>, <a href="http://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA-3.0</a> or <a href="https://creativecommons.org/licenses/by-sa/2.5">CC BY-SA 2.5</a>]'},{path:"Interior_of_the_Leong_San_See_temple,_Singapore.jpg",title:"Interior of the Leong San See Taoist temple, 371 Race Course Road, Singapore 218641",attribution:'Basile Morin [<a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>], <a href="https://commons.wikimedia.org/wiki/File:Interior_of_the_Leong_San_See_temple,_Singapore.jpg">from Wikimedia Commons</a>'},{path:"Nagoya_Castle.jpg",title:"The keep of Nagoya Castle",attribution:'Base64 edit by Noodle snacks [<a href="https://creativecommons.org/licenses/by-sa/3.0">CC BY-SA 3.0</a>], <a href="https://commons.wikimedia.org/wiki/File:Nagoya_Castle(Edit2).jpg">from Wikimedia Commons</a>'},{path:"30_Doradus,_Tarantula_Nebula.jpg",title:"30 Doradus, Tarantula Nebula",attribution:'NASA, ESA, ESO, D. Lennon and E. Sabbi (ESA/STScI), J. Anderson, S. E. de Mink, R. van der Marel, T. Sohn, and N. Walborn (STScI), N. Bastian (Excellence Cluster, Munich), L. Bedin (INAF, Padua), E. Bressert (ESO), P. Crowther (Sheffield), A. de Koter (Amsterdam), C. Evans (UKATC/STFC, Edinburgh), A. Herrero (IAC, Tenerife), N. Langer (AifA, Bonn), I. Platais (JHU) and H. Sana (Amsterdam) [Public domain], <a href="https://commons.wikimedia.org/wiki/File:30_Doradus,_Tarantula_Nebula.jpg">via Wikimedia Commons</a>'},{path:"Gasshukoku_suishi_teitoku_kōjōgaki.jpg",title:"Gasshukoku suishi teitoku kōjōgaki (Oral statement by the American Navy admiral)",attribution:'Unknown author [Public domain or Public domain], <a href="https://commons.wikimedia.org/wiki/File:Gasshukoku_suishi_teitoku_k%C5%8Dj%C5%8Dgaki_(Oral_statement_by_the_American_Navy_admiral).png">via Wikimedia Commons</a>'},{path:"Neuschwanstein_Castle_print.jpg",title:"Neuschwanstein Castle, Bavaria, Germany",attribution:'Unknown author [Public domain or Public domain], <a href="https://commons.wikimedia.org/wiki/File:Neuschwanstein_Castle_LOC_print_rotated.jpg">via Wikimedia Commons</a>'},{path:"Moraine_Lake.jpg",title:"Valley of the Ten Peaks and Moraine Lake, Banff National Park, Canada",attribution:'Gorgo [Public domain], <a href="https://commons.wikimedia.org/wiki/File:Moraine_Lake_17092005.jpg">via Wikimedia Commons</a>'},{path:"NYC_Mulberry_Street.jpg",title:"Mulberry Street, New York City",attribution:"Library of Congress [Public domain]"},{path:"geometric_abstract_expression_painting.jpg",title:"Geometric abstract expression painting",attribution:"Photo by Steve Johnson on Unsplash"}];</script> <script>"use strict";window.musicTracks=[{path:"music/Audiobinger_-_City_Lights.mp3",title:"Audiobinger - City Lights",attribution:{track_url:"http://freemusicarchive.org/music/Audiobinger/~/City_Lights_1859",track_name:"City Lights",author_url:"http://freemusicarchive.org/music/Audiobinger/",author_name:"Audiobinger",source_url:"https://freemusicarchive.org/",source_name:"Free Music Archive",license_url:"http://creativecommons.org/licenses/by-nc/4.0/",license_name:"CC BY NC"}},{path:"music/Broke_For_Free_-_05_-_Something_Elated.mp3",title:"Broke For Free - Something Elated",attribution:{track_url:"http://freemusicarchive.org/music/Broke_For_Free/Something_EP/Broke_For_Free_-_Something_EP_-_05_Something_Elated",track_name:"Something Elated",author_url:"http://freemusicarchive.org/music/Broke_For_Free/",author_name:"Broke For Free",source_url:"https://freemusicarchive.org/",source_name:"Free Music Archive",license_url:"http://creativecommons.org/licenses/by/3.0/us/",license_name:"CC BY"}}];</script> <script>"use strict";window.Pattern=function(){function n(){return Pattern.DIRECTIONS[Math.floor(Math.random()*Pattern.DIRECTIONS.length)]}function t(t){for(;;){t.push(n());var r=t.slice(-(e+1));if(r.length<e)return;if(!r.every(function(n){return n==r[0]}))return;t.pop()}}function r(){var n=o[u];return u++,u>=o.length&&(u=0),n}var e=3,u=0,o=[];return function(n,r){for(var e=0;e<r;e++)t(n)}(o,8),{peek:function(){return o[u]},stack:function(){return u},length:function(){return o.length},next:r}},window.Pattern.DIRECTIONS=["left","up","right","down"];</script> <script>"use strict";window.Game=function(n){function t(n){return 1.7*(n-R)}function r(n){return R?t(n)+(R-x):n-x}function e(){return R?R+(x+v-R)/1.7:x+v}function u(n){return v-r(n)}function i(n){var t=u(n)/v;return t<0?0:t>1?1:t}function o(n){return S=T.next(),x=n,b=!1,R=null,E=null,S}function c(n,t){return b=n==S,b&&(R=t),b}function a(n){return R?n-R:0}function f(){return R-x}function l(){return b&&S==T.peek()}function d(){E=!0}function m(n){if(!R)return 0;var t=(h-f()+a(n))*Math.max(1,p/20);return i(n)<=.1?t*=2:i(n)<=.2&&(t*=1.5),Math.floor(t)}function s(n){return{allowedTime:v,score:k,streak:p,startTime:x,grindStart:R,combo:E,direction:S,now:n,diff:r(n),delta:null}}function g(){var n=T.length();p<=n&&f()<=600&&G++,p==n?v-=35*Math.max(3,G):p%(2*n)==n&&(v>=850?v-=65:v>300&&(v-=30))}function w(n){var t=s(n);if(M.push(t),r(n)>v)return"timeExceeded";if(!b)return"incorrect";var e=m(n);k+=e,t.score=k,t.delta=e,g(),p++}var h=1500,v=h,k=0,p=1,x=null,R=null,E=null,G=0,S=null,T=new Pattern,b=!1,M=[];return{touch:function(){return n},grinding:function(){return!!R},score:function(){return k},streak:function(){return p},stack:function(){return T.stack()},patternLength:function(){return T.length()},roundLogs:function(){return M},roundStarted:o,input:c,timeRemaining:u,timeRemainingRatio:i,finishTime:e,canCombo:l,comboed:d,roundEnded:w,delta:m}},window.Game.SCORING_VERSION=2,window.Game.formatOutcome=function(n){return"incorrect"==n?"Wrong input":"timeExceeded"==n?"Too slow":""};</script> <script>"use strict";window.Ranks=function(){function n(n){var m=null;for(var e in a){var i=a[e];n>=i.minScore&&(m=i)}return m}var a={bronze:{minScore:0,humanName:"Bronze",class:"bronze"},silver:{minScore:5e4,humanName:"Silver",class:"silver"},gold:{minScore:8e4,humanName:"Gold",class:"gold"},platinum:{minScore:1e5,humanName:"Platinum",class:"platinum"},diamond:{minScore:11e5,humanName:"Diamond",class:"diamond"},vanadium:{minScore:12e4,humanName:"Vanadium",class:"vanadium"},strontium:{minScore:13e4,humanName:"Strontium",class:"strontium"}};return{scoreRank:n}}();</script> <script>"use strict";window.Settings={define:function(e,o,a){if("boolean"!=o&&"integer"!=o&&"float"!=o&&"string"!=o)throw"Invalid setting type";var t=function(){var a=localStorage[e];return"boolean"==o?"true"==a:"integer"==o?parseInt(a):"float"==o?parseFloat(a):a},l=function(o){null==o?delete localStorage[e]:localStorage[e]=o};Object.defineProperty(window.Settings,e,{get:t,set:l}),e in localStorage||(window.Settings[e]=a)}},"user.token"in localStorage&&(localStorage.userToken=localStorage["user.token"],delete localStorage["user.token"]),"music.enabled"in localStorage&&(localStorage.musicEnabled=localStorage["music.enabled"],delete localStorage["music.enabled"]),"backgrounds.index"in localStorage&&(localStorage.backgroundImageId=localStorage["backgrounds.index"],delete localStorage["backgrounds.index"]);</script> <script>"use strict";
+
+window.BackgroundImages = (function() {
+  Settings.define("backgroundImageId", "integer", 17);
+
+  function current() {
+    return window.allImages[Settings.backgroundImageId];
+  }
+
+  function render() {
+    document.body.style.backgroundImage = `url("images/${current().path}")`;
+  }
+
+  document.addEventListener("DOMContentLoaded", render);
+
+  return {
+    images: function() {
+      return window.allImages;
+    },
+    current: current,
+    get currentId() {
+      return Settings.backgroundImageId;
+    },
+    set currentId(value) {
+      Settings.backgroundImageId = value;
+      render();
+    }
+  };
+})();</script> <script>"use strict";window.Music=function(){function n(){return Settings.musicEnabled}function t(n){n||u(),Settings.musicEnabled=n,n&&!c&&s()}function e(n){Settings.musicLastStart=n}function i(){n()&&a.play()}function u(){n()&&(a.pause(),a.ended||e(a.currentTime))}function s(){a=new Audio("music/Audiobinger_-_City_Lights.mp3"),a.loop=!0,a.addEventListener("ended",function(){e(null)}),a.currentTime=Settings.musicLastStart,c=!0}Settings.define("musicEnabled","boolean",!0),Settings.define("musicLastStart","float",0);var a,c=!1;return n()&&s(),{getEnabled:n,setEnabled:t,play:i,pause:u}}();</script> <script>"use strict";window.engine=function(){function t(){return S?performance.now():Date.now()}function e(t){E=t,document.body.classList.remove("attract","waiting","playing","game-over"),document.body.classList.add(E)}function n(){e("waiting"),C=new Game(document.body.classList.contains("touch")),Music.play(),setTimeout(function(){"waiting"==E&&(e("playing"),i(t()),a())},500)}function o(t){for(var e in Pattern.DIRECTIONS)document.body.classList.remove(Pattern.DIRECTIONS[e]);document.body.classList.add(t)}function i(){L.style.strokeDasharray=1262.92/C.patternLength()-4+" 4",k.style.strokeDashoffset=(C.stack()+1)/C.patternLength()*1262.92,o(C.roundStarted(t())),D=null}function a(){var e=t();R=window.requestAnimationFrame(a),b.style.strokeDashoffset=1482.83-1482.83*C.timeRemainingRatio(e),C.grinding()?document.body.classList.add("grinding"):document.body.classList.remove("grinding");var n=C.score()+C.delta(e);h.textContent=n>0?n.toLocaleString():"",C.timeRemaining(e)<0&&setTimeout(s,0,e)}function s(t){if(!C.canCombo())return void f(t);var e=D;f(C.finishTime()),D=e,C.input(e,t),C.comboed()}function r(t,e){if(!document.body.classList.contains("panel-open")&&"playing"==E)if(t.preventDefault(),D)D!=e&&(C.input(null,t.timeStamp),f(t.timeStamp));else{if(!C.input(e,t.timeStamp))return void f(t.timeStamp);D=e}}function d(t,e){return!!document.body.classList.contains("panel-open")||("waiting"==E?(t.preventDefault(),!0):"playing"==E&&(t.preventDefault(),D&&D==e||C.input(null,t.timeStamp),void f(t.timeStamp)))}function c(t){r(t,w[t.keyCode])}function u(t){d(t,w[t.keyCode])||32!=t.keyCode&&13!=t.keyCode||(t.preventDefault(),$("#game-over .play").matches(".disabled")||n())}function l(t){r(t,t.target.dataset.direction)}function m(t){var e=t.changedTouches[0];d(t,document.elementFromPoint(e.pageX,e.pageY).dataset.direction)}function f(t){D=null;var e=C.roundEnded(t);e?y(e):i(t)}function p(){o("blank"),document.body.classList.remove("grinding"),h.textContent="",b.style.strokeDashoffset=0,k.style.strokeDashoffset=0}function y(t){window.cancelAnimationFrame(R),g(),p(),$("#results-score").textContent=C.score().toLocaleString(),$("#results-rank").textContent=Ranks.scoreRank(C.score()).humanName,$("#results-streak").textContent=C.streak().toLocaleString(),$("#results-outcome").textContent=Game.formatOutcome(t),e("game-over"),Music.pause(),Api.submitScore(C,t)}function g(){document.body.classList.contains("touch")&&($("#game-over .play").classList.add("disabled"),setTimeout(function(){$("#game-over .play").classList.remove("disabled")},500))}function v(){document.body.classList.add("touch"),window.removeEventListener("keydown",c),window.removeEventListener("keyup",u),window.addEventListener("touchstart",l),window.addEventListener("touchend",m),$(".play").removeEventListener("touchstart",v)}var w={37:"left",38:"up",39:"right",40:"down",65:"left",87:"up",68:"right",83:"down"};window.$=document.querySelector.bind(document);var L=$("#stack"),k=$("#stack-track"),b=$("#time-remaining-track"),h=$("#score");1..toLocaleString();var S="object"==typeof window.performance,C=null,D=null,E=null,R=null;$(".play").addEventListener("touchstart",v),window.addEventListener("keydown",c),window.addEventListener("keyup",u),document.body.addEventListener("click",function(t){t.target.matches(".play:not(.disabled)")&&n()})},document.addEventListener("DOMContentLoaded",engine);</script> <script>"use strict";window.Menu=function(){function e(){$("#music-status").classList.remove("enabled","disabled"),$("#music-status").classList.add(Music.getEnabled()?"enabled":"disabled")}function t(){Music.setEnabled(!Music.getEnabled()),e()}function n(){$("#menu-welcome").innerText=Profile.username()?"Hello, "+Profile.username()+"!":"Hello!"}function s(){document.body.addEventListener("click",function(e){var s=e.target.closest("#menu a.list-item");if(s){e.preventDefault();var u=s.getAttribute("href").substring(1);Panel.forward(new Panels[u])}e.target.closest("#menu-trigger")&&(n(),document.body.classList.add("menu-open")),e.target.closest("#menu-close")&&document.body.classList.remove("menu-open"),e.target.closest("#music-status")&&t()}),e()}return document.addEventListener("DOMContentLoaded",s),{render:n}}();</script> <script>"use strict";window.Panel=function(){function n(){return i[i.length-1]}function e(n){i.push(n),t()}function t(){n()&&a(n().mount())}function o(){n()&&i.pop().unmount(),n()?t():c()}function a(n){$("#panel-content").innerHTML=n,$("body").classList.add("panel-open"),d()}function c(){$("body").classList.remove("panel-open")}function d(){var n=document.defaultView.getComputedStyle($("#panel-backdrop")),e=parseInt(n.height)-parseInt(n.paddingTop)-parseInt(n.paddingBottom);$("#panel-content").style.maxHeight=e+"px"}var i=[];return document.addEventListener("DOMContentLoaded",function(){window.addEventListener("resize",d),$("body").addEventListener("click",function(n){n.target.closest("#panel-back")?o():(n.target.matches("#panel-backdrop")||n.target.closest("#panel-close"))&&o()})}),{forward:e,back:o}}(),window.Panels={};</script> <script>"use strict";
+
+window.Client = (function() {
+  var endpoint = null;
+  if(location.host == "akc.link" || location.host == "www.akc.link") endpoint = "https://api.akc.link/";
+  else if(location.host == "akc.dokku.bloople.net") endpoint = "https://akc-api.dokku.bloople.net";
+  else endpoint = "http://localhost:3000/";
+
+  function serialize(params) {
+    return "?" + Object.keys(params).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`).join('&');
+  }
+
+  function request(options) {
+    var http = new XMLHttpRequest();
+    var requestType = options.type || "GET";
+    var url = endpoint + options.path;
+
+    var data = options.data || {};
+    if(options.token != null) data.access_token = options.token;
+
+    if(requestType == "GET") url += serialize(data);
+
+    http.open(requestType, url);
+
+    http.onreadystatechange = function() {
+      if(http.readyState === 4 && http.status === 200) {
+        var success = options.success;
+        if(success) success(JSON.parse(http.responseText));
+      }
+      else if(http.readyState === 4 && http.status === 422) {
+        var failure = options.failure;
+        if(failure) failure(JSON.parse(http.responseText));
+      }
+    };
+
+    http.setRequestHeader("Accept", "application/json");
+    http.setRequestHeader("Content-Type", "text/plain");
+
+    if(requestType != "GET" && data != {}) http.send(JSON.stringify(data));
+    else http.send();
+  }
+
+  return {
+    request: request
+  };
+})();</script> <script>"use strict";window.Api=function(){function e(){return Settings.userToken}function t(t){var s=e();if(null!=s)return t(s);n(function(e){Settings.userToken=e.token,t(e.token)})}function n(e){Client.request({type:"POST",path:"users",success:e})}function s(e){t(function(t){Client.request({type:"GET",path:"my/profile",token:t,success:e})})}function o(e,n,s){t(function(t){Client.request({type:"POST",path:"my/profile",token:t,data:{username:e},success:n,failure:s})})}function u(e,n,s){if(0!=e.score()){var o={scoring_version:Game.SCORING_VERSION,mode:e.touch()?"touch":"keyboard",value:e.score(),streak:e.streak(),rank:Ranks.scoreRank(e.score()).humanName,outcome:n,rounds:e.roundLogs()};t(function(e){Client.request({type:"POST",path:"my/scores",token:e,data:{score:o},success:s})})}}function r(e){t(function(t){Client.request({path:"my/scores",token:t,success:e})})}function c(e){Client.request({path:"scores",success:e})}function i(e,t){Client.request({path:"scores/"+e,success:t})}return Settings.define("userToken","string"),{token:e,loadProfile:s,saveProfile:o,submitScore:u,loadScores:r,loadTopScores:c,loadResult:i}}();</script> <script>"use strict";window.Profile=function(){function n(){if(1!=arguments.length)return o;o=arguments[0]}function i(n){Api.loadProfile(function(i){o=i.username,n()})}function e(n,i){Api.saveProfile(o,n,i)}var o=null;return null!=Api.token()&&i(function(){}),{load:i,save:e,username:n}}();</script> <script>"use strict";window.Panels.Util=function(){function e(e){return c.format(e).replace(",","")}function t(t){return e(Date.parse(t))}function n(t){var n=typeof t;return t instanceof Date?e(t):"number"==n?t.toLocaleString():t}function r(e){return e.replace(/(<(pre|script|style|textarea)[^]+?<\/\2)|(^|>)\s+|\s+(?=<|$)/g,"$1$3")}function a(e){return null==e?"":e.toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}function i(e){return a(n(e))}var c=new Intl.DateTimeFormat("en-AU",{year:"numeric",month:"numeric",day:"numeric",hour:"numeric",minute:"numeric",hour12:!0});return{formatDate:e,formatTimestamp:t,format:n,stripWhiteSpaceHTML:r,escapeHTML:a,formatThenEscape:i}}(),window.e=Panels.Util.escapeHTML,window.f=Panels.Util.format,window.ef=Panels.Util.formatThenEscape,window.m=Panels.Util.stripWhiteSpaceHTML;</script> <script>"use strict";
+
+window.Panels.Attribution = function() {
+  function mount() {
+    return `
+      <h2>Attribution</h2>
+      <h4>Music</h4>
+      <p>
+        "<a href="http://freemusicarchive.org/music/Audiobinger/~/City_Lights_1859">City Lights</a>" by <a href="http://freemusicarchive.org/music/Audiobinger/">Audiobinger</a><br>
+        From the <a href="https://freemusicarchive.org/">Free Music Archive</a><br>
+        <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY NC</a>
+      </p>
+      <h4>Background image</h4>
+      <p>${BackgroundImages.current().attribution}</p>
+    `;
+  }
+
+  function unmount() {
+  }
+
+  return {
+    mount: mount,
+    unmount: unmount
+  };
+};</script> <script>"use strict";
+
+window.Panels.SwrUpdated = function() {
+  function mount() {
+    return `
+      The game has been updated, please <a href='javascript:window.location.reload()'>reload the game</a>
+      to play on the latest version.
+    `;
+  }
+
+  function unmount() {
+  }
+
+  return {
+    mount: mount,
+    unmount: unmount
+  };
+};</script> <script>"use strict";
+
+window.Panels.MyProfile = function() {
+  function submitHandler(e) {
+    if(e.target.matches("#my-profile-form form")) {
+      e.preventDefault();
+      $("#my-profile-form .btn").classList.add("disabled");
+      update();
+    }
+  }
+
+  function clickHandler(e) {
+    if(e.target.matches("#my-profile-form .btn.disabled")) e.preventDefault();
+  }
+
+  function update() {
+    var alert = $("#my-profile-message");
+    alert.innerHTML = "";
+    alert.classList.remove("success", "error");
+
+    Profile.username($("#profile-username").value);
+    Profile.save(function() {
+      alert.innerHTML = "User profile updated successfully.";
+      alert.classList.add("success");
+      renderForm();
+      Menu.render();
+    }, function(data) {
+      alert.innerHTML = renderErrors(data.errors);
+      alert.classList.add("error");
+      $("#my-profile-form .btn").classList.remove("disabled");
+    });
+  }
+
+  function mount() {
+    document.body.addEventListener("submit", submitHandler);
+    document.body.addEventListener("click", clickHandler);
+
+    setTimeout(function() {
+      Profile.load(render);
+    }, 0);
+
+    return `<div id="my-profile-root">Loading...</div>`;
+  }
+
+  function render() {
+    $("#my-profile-root").innerHTML = `
+      <h2>Your Profile</h2>
+      <div id="my-profile-message" class="alert"></div>
+      <div id="my-profile-form"></div>`;
+    renderForm();
+  }
+
+  function renderForm() {
+    $("#my-profile-form").innerHTML = `
+      <form>
+        <div>
+          <label for="profile-username">Username</label>
+          <input type="text" id="profile-username" value="${e(Profile.username())}">
+        </div>
+        <div>
+          <label for="user-token">Token</label>
+          <p>${e(Api.token())}</p>
+        </div>
+        <div>
+          <button type="submit" class="btn">Save</button>
+        </div>
+      </form>`;
+  }
+
+  function renderErrors(errors) {
+    var output = [];
+    for(var i = 0; i < errors.length; i++) output.push(`<li>${errors[i]}</li>`);
+    return `
+      <p>Sorry, these errors prevented your profile from being updated:</p>
+      <ul>${output.join("")}</ul>`;
+  }
+
+  function unmount() {
+    document.body.removeEventListener("submit", submitHandler);
+    document.body.removeEventListener("click", clickHandler);
+  }
+
+  return {
+    mount: mount,
+    unmount: unmount
+  };
+};</script> <script>"use strict";
+
+window.Panels.MyScores = function() {
+  function clickHandler(e) {
+    if(e.target.matches("#my-scores-root a")) {
+      e.preventDefault();
+      Panel.forward(new Panels.ShowResult(e.target.dataset.id));
+    }
+  }
+
+  function mount() {
+    document.body.addEventListener("click", clickHandler);
+    Api.loadScores(render);
+    return `<div id="my-scores-root">Loading...</div>`;
+  }
+
+  function render(scores) {
+    $("#my-scores-root").innerHTML = `
+      <h2>Your Scores</h2>
+      <table>
+        <tr>
+          <th>Score</th>
+          <th class="visible-desktop">Streak</th>
+          <th>When</th>
+        </tr>
+        ${renderScores(scores)}
+      </table>`;
+  }
+
+  function renderScores(scores) {
+    var output = [];
+    for(var i = 0; i < scores.length; i++) output.push(renderScore(scores[i]));
+    return output.join("");
+  }
+
+  function renderScore(score) {
+    return `
+      <tr>
+        <td><a href="#ShowResult" data-id="${e(score.id)}">${ef(score.value)}</a></td>
+        <td class="visible-desktop">${ef(score.streak)}</td>
+        <td>${ef(new Date(score.created_at))}</td>
+      </tr>`;
+  }
+
+  function unmount() {
+    document.body.removeEventListener("click", clickHandler);
+  }
+
+  return {
+    mount: mount,
+    unmount: unmount
+  };
+};</script> <script>"use strict";
+
+window.Panels.TopScores = function() {
+  function clickHandler(e) {
+    if(e.target.matches("#top-scores-root a")) {
+      e.preventDefault();
+      Panel.forward(new Panels.ShowResult(e.target.dataset.id));
+    }
+  }
+
+  function mount() {
+    document.body.addEventListener("click", clickHandler);
+    Api.loadTopScores(render);
+    return `<div id="top-scores-root">Loading...</div>`;
+  }
+
+  function render(scores) {
+    $("#top-scores-root").innerHTML = `
+      <h2>Top Scores</h2>
+      <table>
+        <tr>
+          <th>#</th>
+          <th>User</th>
+          <th>Score</th>
+          <th class="visible-desktop">Streak</th>
+          <th>When</th>
+        </tr>
+        ${renderScores(scores)}
+      </table>`;
+  }
+
+  function renderScores(scores) {
+    var output = [];
+    for(var i = 0; i < scores.length; i++) output.push(renderScore(scores[i], i + 1));
+    return output.join("");
+  }
+
+  function renderScore(score, position) {
+    return `
+      <tr>
+        <td>${ef(position)}</td>
+        <td>${e(score.username)}</td>
+        <td><a href="#" data-id="${e(score.id)}">${ef(score.value)}</a></td>
+        <td class="visible-desktop">${ef(score.streak)}</td>
+        <td>${ef(new Date(score.created_at))}</td>
+      </tr>`;
+  }
+
+  function unmount() {
+    document.body.removeEventListener("click", clickHandler);
+  }
+
+  return {
+    mount: mount,
+    unmount: unmount
+  };
+};</script> <script>"use strict";
+
+window.Panels.BackgroundImage = function() {
+  function clickHandler(e) {
+    if(e.target.matches("#background-image-root a")) {
+      e.preventDefault();
+      var index = e.target.getAttribute("href").substring(1);
+      BackgroundImages.currentId = index;
+      render();
+    }
+  }
+
+  function mount() {
+    document.body.addEventListener("click", clickHandler);
+    setTimeout(render, 0);
+
+    return `<div id="background-image-root">Loading...</div>`;
+  }
+
+  function render() {
+    $("#background-image-root").innerHTML = `
+      <h2>Background Image</h2>
+      ${renderImages()}`;
+  }
+
+  function renderImages() {
+    var output = [];
+    var images = BackgroundImages.images();
+    for(var i = 0; i < images.length; i++) output.push(renderImage(images[i], i));
+    return output.join("");
+  }
+
+  function renderImage(image, index) {
+    var klass = index == BackgroundImages.currentId ? "active" : "";
+    return `<a href="#${index}" class="list-item ${klass}">${e(image.title)}</a>`;
+  }
+
+  function unmount() {
+    document.body.removeEventListener("click", clickHandler);
+  }
+
+  return {
+    mount: mount,
+    unmount: unmount
+  };
+};</script> <script>"use strict";
+
+window.Panels.ShowResult = function(scoreId) {
+  function mount() {
+    Api.loadResult(scoreId, render);
+    return `<div id="show-result-root">Loading...</div>`;
+  }
+
+  function render(result) {
+    $("#show-result-root").innerHTML = m(`
+      <h2>Game Result #${e(result.id)}</h2>
+      <table class="game-result">
+        <tr>
+          <th>User</th>
+          <td>${e(result.username)}</td>
+        </tr>
+        <tr>
+          <th>Played At</th>
+          <td>${ef(new Date(result.created_at))}</td>
+        </tr>
+        <tr>
+          <th>Outcome</th>
+          <td>${e(Game.formatOutcome(result.outcome))}</td>
+        </tr>
+        <tr>
+          <th>Streak</th>
+          <td>${ef(result.streak)}</td>
+        </tr>
+        <tr>
+          <th>Score</th>
+          <td>${ef(result.value)}</td>
+        </tr>
+        <tr>
+          <th>Rank</th>
+          <td>${ef(result.rank)}</td>
+        </tr>
+        <tr>
+          <th>Mode</th>
+          <td>${ef(result.mode)}</td>
+        </tr>
+      </table>
+      <h3>Rounds</h3>
+      <table class="rounds">
+        <tr>
+          <th>#</th>
+          <th></th>
+          <th>
+            <svg class="icon">
+              <use xlink:href="#icon-touch-app" href="#icon-touch-app" />
+            </svg>
+            <svg class="icon">
+              <use xlink:href="#icon-alarm" href="#icon-alarm" />
+            </svg>
+          </th>
+          <th>
+            <svg class="icon">
+              <use xlink:href="#icon-space-bar" href="#icon-space-bar" />
+            </svg>
+            <svg class="icon">
+              <use xlink:href="#icon-schedule" href="#icon-schedule" />
+            </svg>
+          </th>
+          <th>
+            <svg class="icon">
+              <use xlink:href="#icon-track-changes" href="#icon-track-changes" />
+            </svg>
+          </th>
+          <th>
+            <svg class="icon">
+              <use xlink:href="#icon-score" href="#icon-score" />
+            </svg>
+          </th>
+          <th>
+            <svg class="icon">
+              <use xlink:href="#icon-loop" href="#icon-loop" />
+            </svg>
+          </th>
+        </tr>
+        ${renderRounds(result.rounds)}
+      </table>`);
+  }
+
+  function renderRounds(rounds) {
+    var output = [];
+    for(var i = 0; i < rounds.length; i++) output.push(renderRound(rounds[i]));
+    return output.join("");
+  }
+
+  function renderRound(round) {
+    var segments = [];
+
+    segments.push(`<td class="streak">${ef(round.streak)}</td>`);
+    segments.push(`<td class="direction">${renderDirection(round.direction)}</td>`);
+    segments.push(renderTimes(round));
+
+    if(round.delta != null) {
+      segments.push(`<td class="delta">+${ef(round.delta)}</td>`);
+    }
+    else {
+      segments.push(`<td class="delta"></td>`);
+    }
+
+    if(round.combo) {
+      segments.push(`
+        <td class="combo">
+          <svg class="icon">
+            <use xlink:href="#icon-dot" href="#icon-dot" />
+          </svg>
+        </td>`);
+    }
+    else {
+      segments.push(`<td class="combo"></td>`);
+    }
+
+    return `<tr>${segments.join("")}</tr>`;
+  }
+
+  function renderTimes(round) {
+    var ms = `<span class="ms">ms</span>`;
+    var allowedTime = `
+      <td class="allowed-time">${ef(round.allowedTime)}${ms}</td>`;
+
+    if(round.grindStart != null) {
+      var reactionTime = Math.round(round.grindStart - round.startTime);
+      var grindDuration = Math.round(round.now - round.grindStart);
+      return `
+        <td class="reaction-time">${ef(reactionTime)}${ms}</td>
+        <td class="grind-duration">${ef(grindDuration)}${ms}</td>
+        ${allowedTime}`;
+    }
+
+    return `
+      <td class="reaction-time"></td>
+      <td class="grind-duration"></td>
+      ${allowedTime}`;
+  }
+
+  function renderDirection(direction) {
+    return `
+      <svg class="icon">
+        <use xlink:href="#icon-arrow-${direction}" href="#icon-arrow-${direction}" />
+      </svg>`;
+  }
+
+  function unmount() {
+  }
+
+  return {
+    mount: mount,
+    unmount: unmount
+  };
+};</script> <script>"use strict";window.Panels.DebugConsole=function(){function n(){for(var n=[],o=window.DebugConsole.entries(),u=0;u<o.length;u++)n.push(e(o[u]));return n.join("<br>")}function o(){}return{mount:n,unmount:o}};</script> <script>"use strict";
+
+window.debug = window.location.hash == "#debug";
+
+window.DebugConsole = (function() {
+  var entries = [];
+
+  function log() {
+    var entry = [performance.now()];
+    for(var i = 0; i < arguments.length; i++) entry.push(arguments[i].toString());
+    entries.push(entry.join(", "));
+  }
+
+  return {
+    log: log,
+    entries: function() {
+      return entries;
+    }
+  }
+})();
+
+function debugInit() {
+  function debugPlaying() {
+    document.body.classList.remove("attract");
+    document.body.classList.add("playing", "up");
+    $("#time-remaining-track").style.strokeDashoffset = 1482.83;
+  }
+
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="debug-root" style="position: absolute; top: 0; left: 0;">
+      <a href="#" id="debug-playing">Debug Playing</a>
+      <br>
+      <a href="#" id="debug-console">Debug Console</a>
+    </div>
+  `);
+
+  document.body.addEventListener("click", function(e) {
+    if(e.target.matches("#debug-playing")) {
+      e.preventDefault();
+      debugPlaying();
+    }
+    else if(e.target.matches("#debug-console")) {
+      e.preventDefault();
+      Panel.forward(new Panels.DebugConsole());
+    }
+  });
+}
+
+if(window.debug) document.addEventListener("DOMContentLoaded", debugInit);</script> <script>"use strict";"serviceWorker"in navigator&&window.addEventListener("load",function(){"akc.link"!=location.host&&"www.akc.link"!=location.host&&"akc.dokku.bloople.net"!=location.host||navigator.serviceWorker.register("service-worker.js").then(function(e){e.onupdatefound=function(){var n=e.installing;n.onstatechange=function(){switch(n.state){case"installed":navigator.serviceWorker.controller?Panel.forward(new Panels.SwrUpdated):console.log("Content is now available offline!");break;case"redundant":console.error("The installing service worker became redundant.")}}}}).catch(function(e){console.error("Error during service worker registration:",e)})});</script> </head> <body class="attract"> <div id="attract" class="layer"> <div> <a class="btn play">Play</a> </div> <div id="settings" class></div> </div> <div id="playing" class="layer"> <svg id="time-remaining" viewBox="0 0 520 520"> <defs> <mask id="stack-mask"> <circle cx="260" cy="260" r="201" fill="none" stroke="#fff" stroke-width="19"/> <circle id="stack-track" cx="-260" cy="260" transform="rotate(-90)" r="201" fill="none" stroke="#000" stroke-width="17" stroke-dasharray="1262.92"/> </mask> <mask id="time-remaining-mask"> <circle cx="260" cy="260" r="236" fill="none" stroke="#fff" stroke-width="33"/> <circle id="time-remaining-track" cx="-260" cy="260" transform="rotate(-90)" r="236" fill="none" stroke="#000" stroke-width="33" stroke-dasharray="1482.83"/> </mask> </defs> <circle cx="260" cy="260" r="260" fill="#fff" fill-opacity="0.5"/> <circle id="grind" cx="260" cy="260" r="222" fill="none" stroke="#fff" stroke-width="76"/> <g mask="url(#stack-mask)"> <circle id="stack" cx="-260" cy="260" transform="rotate(-90)" r="201" fill="none" stroke="#000" stroke-width="15" stroke-dashoffset="-2" stroke-dasharray="0 4"/> </g> <g mask="url(#time-remaining-mask)"> <circle cx="-260" cy="260" transform="rotate(-90)" r="236" fill="none" stroke="#008000" stroke-width="31" stroke-dasharray="1482.83"/> <circle cx="-260" cy="260" transform="rotate(-90)" r="236" fill="none" stroke="#f0ad4e" stroke-width="17" stroke-dasharray="1482.83" stroke-dashoffset="1186.26"/> <circle cx="-260" cy="260" transform="rotate(-90)" r="236" fill="none" stroke="#31b0d5" stroke-width="17" stroke-dasharray="1482.83" stroke-dashoffset="1334.55"/> </g> <path id="up" d="M145 260l20 20 81-80v175h28V200l81 80 20-20-115-115z"/> <path id="right" d="M260 145l-20 20 80 81H145v28h175l-80 81 20 20 115-115z"/> <path id="down" d="M375 260l-20-20-81 80V145h-28v175l-81-80-20 20 115 115z"/> <path id="left" d="M375 246H200l80-81-20-20-115 115 115 115 20-20-80-81h175z"/> <text id="score" x="260" y="410" dy="0.35em" text-anchor="middle" fill="#000" stroke="none"/> <text id="waiting" x="260" y="260" dy="0.35em" text-anchor="middle">Get Ready</text> </svg> <svg id="input" width="250" height="250" viewBox="0 0 100 100"> <polygon data-direction="up" points="2 0, 98 0, 50 48" stroke="none" fill="#fff" fill-opacity="0.4"/> <polygon data-direction="right" points="100 2, 100 98, 52 50" stroke="none" fill="#fff" fill-opacity="0.4"/> <polygon data-direction="down" points="2 100, 98 100, 50 52" stroke="none" fill="#fff" fill-opacity="0.4"/> <polygon data-direction="left" points="0 2, 0 98, 48 50" stroke="none" fill="#fff" fill-opacity="0.4"/> <polygon class="chrome" points="3 0.5, 97 0.5, 50 47.5" fill="none" stroke-width="1"/> <polygon class="chrome" points="99.5 3, 99.5 97, 52.5 50" fill="none" stroke-width="1"/> <polygon class="chrome" points="3 99.5, 97 99.5, 50 52.5" fill="none" stroke-width="1"/> <polygon class="chrome" points="0.5 3, 0.5 97, 47.5 50" fill="none" stroke-width="1"/> <path class="chrome" d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" transform="translate(38, 5)"/> <path class="chrome" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" transform="translate(71, 38)"/> <path class="chrome" d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z" transform="translate(38, 71)"/> <path class="chrome" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" transform="translate(5, 38)"/> </svg> </div> <div id="game-over" class="layer"> <div id="results"> <div><b>Game Over</b></div> <table> <tr> <th>Why</th> <td id="results-outcome"></td> </tr> <tr> <th>Streak</th> <td id="results-streak"></td> </tr> <tr> <th>Score</th> <td id="results-score"></td> </tr> <tr> <th>Rank</th> <td id="results-rank"></td> </tr> </table> </div> <a class="btn play">Play</a> </div> <div id="footer"> <svg id="music-status" class="icon" viewBox="0 0 24 24"> <path class="disabled" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/> <path class="enabled" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/> </svg> <svg id="menu-trigger" class="icon" viewBox="0 0 24 24"> <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/> </svg> </div> <svg class="default-hidden"> <symbol id="icon-alarm" width="24" height="24" viewBox="0 0 24 24"> <path d="M22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM12.5 8H11v6l4.75 2.85.75-1.23-4-2.37V8zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/> </symbol> <symbol id="icon-timelapse" width="24" height="24" viewBox="0 0 24 24"> <path d="M16.24 7.76C15.07 6.59 13.54 6 12 6v6l-4.24 4.24c2.34 2.34 6.14 2.34 8.49 0 2.34-2.34 2.34-6.14-.01-8.48zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/> </symbol> <symbol id="icon-track-changes" width="24" height="24" viewBox="0 0 24 24"> <path d="M19.07 4.93l-1.41 1.41C19.1 7.79 20 9.79 20 12c0 4.42-3.58 8-8 8s-8-3.58-8-8c0-4.08 3.05-7.44 7-7.93v2.02C8.16 6.57 6 9.03 6 12c0 3.31 2.69 6 6 6s6-2.69 6-6c0-1.66-.67-3.16-1.76-4.24l-1.41 1.41C15.55 9.9 16 10.9 16 12c0 2.21-1.79 4-4 4s-4-1.79-4-4c0-1.86 1.28-3.41 3-3.86v2.14c-.6.35-1 .98-1 1.72 0 1.1.9 2 2 2s2-.9 2-2c0-.74-.4-1.38-1-1.72V2h-1C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10c0-2.76-1.12-5.26-2.93-7.07z"/> </symbol> <symbol id="icon-hourglass-full" width="24" height="24" viewBox="0 0 24 24"> <path d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6z"/> </symbol> <symbol id="icon-touch-app" width="24" height="24" viewBox="0 0 24 24"> <defs> <path id="a" d="M0 0h24v24H0V0z"/> </defs> <clippath id="b"> <use xlink:href="#a" overflow="visible"/> </clippath> <path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z" clip-path="url(#b)"/> </symbol> <symbol id="icon-score" width="24" height="24" viewBox="0 0 24 24"> <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 2h1.5v3l2-3h1.7l-2 3 2 3h-1.7l-2-3v3H12V5zM7 7.25h2.5V6.5H7V5h4v3.75H8.5v.75H11V11H7V7.25zM19 13l-6 6-4-4-4 4v-2.5l4-4 4 4 6-6V13z"/> </symbol> <symbol id="icon-show-chart" width="24" height="24" viewBox="0 0 24 24"> <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/> </symbol> <symbol id="icon-space-bar" width="24" height="24" viewBox="0 0 24 24"> <path d="M18 9v4H6V9H4v6h16V9z"/> </symbol> <symbol id="icon-loop" width="24" height="24" viewBox="0 0 24 24"> <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/> </symbol> <symbol id="icon-schedule" width="24" height="24" viewBox="0 0 24 24"> <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/> <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/> </symbol> <symbol id="icon-arrow-up" width="24" height="24" viewBox="0 0 24 24"> <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/> </symbol> <symbol id="icon-arrow-right" width="24" height="24" viewBox="0 0 24 24"> <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/> </symbol> <symbol id="icon-arrow-down" width="24" height="24" viewBox="0 0 24 24"> <path fill="#010101" d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/> </symbol> <symbol id="icon-arrow-left" width="24" height="24" viewBox="0 0 24 24"> <path fill="#010101" d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/> </symbol> <symbol id="icon-dot" width="24" height="24" viewBox="0 0 24 24"> <circle cx="12" cy="12" r="10"/> </symbol> <symbol id="icon-collections" width="24" height="24" viewBox="0 0 24 24"> <path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/> </symbol> <symbol id="icon-info" width="24" height="24" viewBox="0 0 24 24"> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/> </symbol> <symbol id="icon-account-circle" width="24" height="24" viewBox="0 0 24 24"> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/> </symbol> <symbol id="icon-close" width="24" height="24" viewBox="0 0 24 24"> <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/> </symbol> </svg> <div id="menu"> <svg id="menu-close" class="icon"><use xlink:href="#icon-close" href="#icon-close"/></svg> <h2 id="menu-welcome">Hello!</h2> <a href="#TopScores" class="list-item"> <svg class="icon"><use xlink:href="#icon-score" href="#icon-score"/></svg> <span>Top Scores</span> </a> <a href="#MyScores" class="list-item"> <svg class="icon"><use xlink:href="#icon-score" href="#icon-score"/></svg> <span>Your Scores</span> </a> <a href="#MyProfile" class="list-item"> <svg class="icon"><use xlink:href="#icon-account-circle" href="#icon-account-circle"/></svg> <span>Your Profile</span> </a> <a href="#BackgroundImage" class="list-item"> <svg class="icon"><use xlink:href="#icon-collections" href="#icon-collections"/></svg> <span>Background Image</span> </a> <a href="#Attribution" class="list-item"> <svg class="icon"><use xlink:href="#icon-info" href="#icon-info"/></svg> <span>Attribution</span> </a> </div> <div id="panel-backdrop"> <div id="panel"> <svg id="panel-close" class="icon"><use xlink:href="#icon-close" href="#icon-close"/></svg> <div id="panel-content"></div> </div> </div> </body> </html> 
